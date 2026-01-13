@@ -28,4 +28,4 @@ Thumbs.db
 
 # SCRIPT
 worker/management/
-worker/migrations
+worker/migrations/
