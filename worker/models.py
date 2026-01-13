@@ -1,11 +1,16 @@
 import random
-
 from django.db import models
 from dateutil.relativedelta import relativedelta
 from django.utils.timezone import now
-
-from resources.custom_enums import RoleChoices, StateCode, FloorCodes, BuildingCodes, PaymentModeChoices, NoticeType
 from resources.constant import ElectricityConsumer
+from resources.custom_enums import (
+    RoleChoices,
+    StateCode,
+    FloorCodes,
+    BuildingCodes,
+    PaymentModeChoices,
+    NoticeType
+)
 
 
 class Person(models.Model):
@@ -31,7 +36,7 @@ class Person(models.Model):
 
 class Contact(models.Model):
     id = models.BigAutoField(primary_key=True)
-    person = models.OneToOneField(Person, on_delete=models.CASCADE, related_name="contacts")
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="contacts", unique=True)
     phn_no = models.CharField(max_length=15, unique=True)
     alt_phn_no = models.CharField(max_length=15, null=True, blank=True)
     wa_no = models.CharField(max_length=15, unique=True)
@@ -43,7 +48,7 @@ class Contact(models.Model):
 
 class Address(models.Model):
     id = models.BigAutoField(primary_key=True)
-    person = models.OneToOneField(Person, on_delete=models.CASCADE, related_name="addresses")
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="addresses", unique=True)
     old_add = models.TextField(max_length=255)
     st = models.CharField(max_length=50, choices=StateCode.choices, default=StateCode.MAHARASHTRA)
     ct = models.CharField(max_length=70)
@@ -82,7 +87,7 @@ class RoomMaster(models.Model):
     def save(self, *args, **kwargs):
         self.r_code = f"{self.r_no}_{self.build_name}"
 
-        # SAVE ADD
+        # SAVE ADDRESS
         if self.build_name == BuildingCodes.VAMAN_NIVAS:
             self.add = f"Vaman Nivas Room No {self.r_no}, {str(self.flr_no).capitalize()}, Near Shree Pad Darshan front of Holy Cross English School, Nandivali Kalyan E. Maharashtra 421306."
 
@@ -96,7 +101,7 @@ class RoomMaster(models.Model):
 
 class MeterDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    r_no = models.ForeignKey(RoomMaster, on_delete=models.CASCADE, related_name="meter_details")
+    r_no = models.OneToOneField(RoomMaster, on_delete=models.CASCADE, related_name="meter_details", unique=True)
     meter_no = models.PositiveIntegerField(unique=True)
     bu_code = models.PositiveSmallIntegerField()
     con_type = models.CharField(max_length=12, default=ElectricityConsumer.LT)
@@ -111,8 +116,8 @@ class MeterDetails(models.Model):
 
 class RoomAllotment(models.Model):
     id = models.BigAutoField(primary_key=True)
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="room_allotments")
-    r_no = models.ForeignKey(RoomMaster, on_delete=models.CASCADE, related_name="room_allotments")
+    person = models.OneToOneField(Person, on_delete=models.CASCADE, related_name="room_allotments", unique=True)
+    r_no = models.OneToOneField(RoomMaster, on_delete=models.CASCADE, related_name="room_allotments", unique=True)
     start_date = models.DateField()
     end_date = models.DateField()
     is_active = models.BooleanField(default=False)
@@ -135,7 +140,7 @@ class RentalDetails(models.Model):
     rent = models.FloatField()
     maintenance = models.FloatField()
     rent_total = models.FloatField(default=0)
-    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="rental_details")
+    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="rental_details", unique=True)
     ts = models.DateTimeField(auto_now=True)
 
     class Meta:
