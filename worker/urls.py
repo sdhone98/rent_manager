@@ -1,0 +1,35 @@
+from django.urls import path
+from worker.views import (
+    AvailableRoomsView,
+    AddressByPersonAPIView,
+    DocumentsByPersonAPIView,
+    RentalDetailsByPersonAPIView,
+    RoomAllotmentByPersonAPIView,
+    TransactionsByPersonAPIView,
+    ContactByPersonAPIView, RoomMasterAPIView, PersonAPIView
+)
+
+urlpatterns = [
+    path("room/", RoomMasterAPIView.as_view(), name="room-list-create"),
+    path("room/<int:pk>/", RoomMasterAPIView.as_view(), name="room-detail"),
+
+    path("room/available/", AvailableRoomsView.as_view(), name="available-rooms"),
+
+    path("person/", PersonAPIView.as_view(), name="person-list-create"),
+    path("person/<int:pk>/", PersonAPIView.as_view(), name="person-detail"),
+
+    path("person/<int:person_id>/contact/", ContactByPersonAPIView.as_view(), name="contact"),
+
+    path("person/<int:person_id>/address/", AddressByPersonAPIView.as_view(), name="address"),
+
+    path("person/<int:person_id>/doc/", DocumentsByPersonAPIView.as_view(), name="documents"),
+
+    path("person/<int:person_id>/room-allotment/", RoomAllotmentByPersonAPIView.as_view(), name="room-allotment"),
+
+    path("person/<int:person_id>/room-allotment/<int:rm_map>/rental-details/", RentalDetailsByPersonAPIView.as_view(),
+         name="rental-details"),
+
+    path("person/<int:person_id>/room-allotment/<int:rm_map>/transactions/", TransactionsByPersonAPIView.as_view(),
+         name="transactions"),
+
+]

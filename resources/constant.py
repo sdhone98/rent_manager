@@ -1,0 +1,12 @@
+BUILDING_CODES = "BUILDING_CODES"
+ROLE_TYPE = "ROLE_CODES"
+PAYMENT_MODE = "PAYMENT_MODE"
+
+""" BUILDING NAMES """
+VAMAN_NIVAS = 'Vaman Nivas'
+ABHISHEK_APT = 'Abhishek Apartment'
+
+""" ELECTRICITY CONSUMER TYPES """
+class ElectricityConsumer:
+    LT = "LT"
+    HT = "HT"

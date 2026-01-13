@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction Invoice</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+
+        .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .company-details h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #222;
+        }
+
+        .company-details p {
+            margin: 3px 0;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .invoice-details {
+            text-align: right;
+        }
+
+        .invoice-details p {
+            margin: 3px 0;
+            font-size: 11px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+        .section-date{
+            text-align: center;
+            font-size: 14px;
+        }
+
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #222;
+            border-left: 4px solid #444;
+            padding-left: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table thead th {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+
+        table tbody td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .total-box {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .total-table {
+            width: 40%;
+            border-collapse: collapse;
+        }
+
+        .total-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        .total-table .label {
+            font-weight: bold;
+            background: #f5f5f5;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #777;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 11px;
+            border-radius: 12px;
+            color: #fff;
+            background-color: #444;
+        }
+
+        /* ACTION BUTTONS */
+        .action-bar {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .action-btn {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            margin-left: 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #222;
+        }
+
+        /* Hide buttons in print/PDF */
+        @media print {
+            .action-bar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="invoice-box">
+
+    <!-- HEADER -->
+        <div class="action-bar">
+            <button class="action-btn" onclick="window.print()">Download / Print</button>
+        </div>
+    <div class="header">
+        <div class="company-details">
+            <h2>Dhone Rental Management</h2>
+            <p>Nandivali, Kalyan East</p>
+            <p>Maharashtra - 421306</p>
+            <p>Email: {{COMPANY_EMAIL}} </p>
+        </div>
+
+        <div class="invoice-details">
+            <p><b>Invoice No:</b> {{ transaction.tnx_no }}</p>
+            <p><b>Date:</b> {{ transaction.ts }}</p>
+            <p>
+                <span class="badge">
+                    {{ transaction.payment_mode }}
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- TENANT DETAILS -->
+    <div class="section">
+        <p class="section-date"><b>{{ MONTH }}</b></p>
+        <div class="section-title">Tenant Details</div>
+        <p><b>Name:</b> {{ transaction.rm_map.person.f_name }} {{ transaction.rm_map.person.m_name }} {{ transaction.rm_map.person.l_name }}</p>
+        <p><b>Room:</b> {{ transaction.rm_map.r_no.r_no }} | {{ transaction.rm_map.r_no.flr_no }} | {{ transaction.rm_map.r_no.build_name }}</p>
+    </div>
+
+    <!-- PAYMENT DETAILS -->
+    <div class="section">
+        <div class="section-title">Payment Details</div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th>Amount (₹)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>
+                    {% if transaction.is_rent %}
+                    Monthly Rent
+                    {% else %}
+                    Other
+                    {% endif %}
+                </td>
+                <td>{{ transaction.amount }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- DESCRIPTION DETAILS -->
+    <div class="section">
+        <p><b>Description:</b> {{ transaction.comment }} </p>
+    </div>
+
+    <!-- TOTAL -->
+    <div class="total-box">
+        <table class="total-table">
+            <tr>
+                <td class="label">Total Amount</td>
+                <td>₹ {{ transaction.amount }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>This is a system generated invoice. No signature required.</p>
+        <p>Thank you for your payment.</p>
+    </div>
+
+</div>
+
+</body>
+</html>
