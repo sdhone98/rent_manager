@@ -80,13 +80,14 @@ class DocsSerializer(serializers.ModelSerializer):
             )
 
     def validate(self, attrs):
-
         # AADHAR NO SHOULD NE 12 CHAR
-        if len(attrs["aadhaar_no"]) == 12:
-            raise serializers.ValidationError("Aadhar number must be 12 digits.")
+        if attrs.get("aadhar_no"):
+            if len(attrs["aadhar_no"]) != 12:
+                raise serializers.ValidationError("Aadhar number must be 12 digits.")
 
         # VALIDATE PAN NO
-        validation_person(attrs["pan_no"])
+        if attrs.get("pan_no"):
+            validate_pan(attrs["pan_no"])
 
         person_id = self.context["view"].kwargs.get("person_id")
 
@@ -198,5 +199,5 @@ def validate_pan(pan: str) -> bool | None:
     )
 
     if not bool(re.match(pattern, pan)):
-        raise serializers.ValidationError("Amount must be greater than zero.")
+        raise serializers.ValidationError("Invalid PAN number.")
     return None
