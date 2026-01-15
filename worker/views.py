@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from resources.generate_transaction_pdf import generate_transaction_html
@@ -45,6 +46,7 @@ class RoomMasterAPIView(
 
         return queryset
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save()
 
@@ -57,9 +59,16 @@ class AvailableRoomsView(
     def get_queryset(self):
         building_code = self.request.query_params.get("building_code", False)
 
-        queryset = RoomMaster.objects.exclude(
-            room_allotments__is_active=True
-        )
+        queryset = RoomMaster.objects.all()
+
+        active_rooms = RoomAllotment.objects.filter(
+            is_active=False
+        ).distinct()
+
+        if active_rooms:
+            queryset = queryset.filter(
+                id__in=active_rooms
+            )
 
         if building_code:
             queryset = queryset.filter(build_name=building_code)
@@ -83,6 +92,7 @@ class PersonAPIView(
 
         return queryset
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save()
 
@@ -97,6 +107,7 @@ class ContactByPersonAPIView(
     def get_queryset(self):
         return Contact.objects.all()
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(person_id=self.kwargs["person_id"])
 
@@ -111,6 +122,7 @@ class AddressByPersonAPIView(
     def get_queryset(self):
         return Address.objects.all()
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(person_id=self.kwargs["person_id"])
 
@@ -126,6 +138,7 @@ class DocumentsByPersonAPIView(
     def get_queryset(self):
         return Docs.objects.all()
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(person_id=self.kwargs["person_id"])
 
@@ -138,10 +151,21 @@ class RentalDetailsByPersonAPIView(
     lookup_field = "rm_map"
 
     def get_queryset(self):
-        return RentalDetails.objects.all()
+        return RentalDetails.objects.filter(rm_map=self.kwargs["rm_map"])
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(rm_map_id=self.kwargs["rm_map"])
+
+
+class ListAllRentalDetailsByPersonAPIView(
+    generics.ListAPIView
+):
+    serializer_class = RentalDetailsSerializer
+    lookup_field = "rm_map__person_id"
+
+    def get_queryset(self):
+        return RentalDetails.objects.filter(rm_map__person_id=self.kwargs["person_id"])
 
 
 class RoomAllotmentByPersonAPIView(
@@ -156,13 +180,13 @@ class RoomAllotmentByPersonAPIView(
             person_id=self.kwargs["person_id"],
         )
 
+    @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(person_id=self.kwargs["person_id"])
 
 
 class TransactionsByPersonAPIView(
     generics.CreateAPIView,
-    generics.ListAPIView,
     generics.RetrieveUpdateDestroyAPIView
 ):
     serializer_class = TransactionsSerializer
@@ -174,15 +198,28 @@ class TransactionsByPersonAPIView(
             rm_map_id=self.kwargs["rm_map"]
         )
 
+    @transaction.atomic
     def perform_create(self, serializer):
-        transaction = serializer.save(rm_map_id=self.kwargs["rm_map"])
+        transaction_instance = serializer.save(rm_map_id=self.kwargs["rm_map"])
 
         # GENERATE TRANSACTION PDF
-        file_name = generate_transaction_html(transaction)
+        file_name = generate_transaction_html(transaction_instance)
 
         # Save receipt path
-        transaction.receipt = f"{file_name}"
-        transaction.save(update_fields=["receipt"])
+        transaction_instance.receipt = f"{file_name}"
+        transaction_instance.save(update_fields=["receipt"])
 
         send_transaction_email(transaction)
         # send_whatsapp_receipt(transaction)
+
+
+class ListAllTransactionsByPersonAPIView(
+    generics.ListAPIView
+):
+    serializer_class = TransactionsSerializer
+    lookup_field = "person_id"
+
+    def get_queryset(self):
+        return Transaction.objects.filter(
+            rm_map__person_id=self.kwargs["person_id"]
+        )

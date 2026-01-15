@@ -19,15 +19,15 @@ class PersonSerializer(serializers.ModelSerializer):
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = "__all__"
-        extra_kwargs = {
-            "person_id": {
-                "required": False
-            }
-        }
+        exclude = ("person",)
 
     def validate(self, attrs):
         person_id = self.context["view"].kwargs.get("person_id")
+
+        # PREVENT DUPLICATE CONTACT
+        if self.instance is None and Contact.objects.filter(person_id=person_id).exists():
+            raise serializers.ValidationError("Person contact details already exist")
+
         validation_person(person_id)
         return attrs
 
@@ -35,27 +35,22 @@ class ContactSerializer(serializers.ModelSerializer):
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = "__all__"
-        extra_kwargs = {
-            "person_id": {
-                "required": False
-            }
-        }
+        exclude = ("person",)
 
     def validate(self, attrs):
-        validation_person(attrs["person_id"])
+        person_id = self.context["view"].kwargs.get("person_id")
+
+        # PREVENT DUPLICATE CONTACT
+        if self.instance is None and Address.objects.filter(person_id=person_id).exists():
+            raise serializers.ValidationError("Person address details already exist")
+        validation_person(person_id)
         return attrs
 
 
 class DocsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Docs
-        fields = "__all__"
-        extra_kwargs = {
-            "person_id": {
-                "required": False
-            }
-        }
+        exclude = ("person",)
 
     def validate_aadhaar_doc(self, file):
         self._validate_pdf(file, field_name="Aadhaar document")
@@ -84,6 +79,10 @@ class DocsSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         person_id = self.context["view"].kwargs.get("person_id")
+
+        # PREVENT DUPLICATE CONTACT
+        if self.instance is None and Docs.objects.filter(person_id=person_id).exists():
+            raise serializers.ValidationError("Person documents already exist")
         validation_person(person_id)
         return attrs
 
@@ -93,15 +92,15 @@ class RoomAllotmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RoomAllotment
-        fields = "__all__"
-        extra_kwargs = {
-            "person_id": {
-                "required": False
-            }
-        }
+        exclude = ("person",)
 
     def validate(self, attrs):
         person_id = self.context["view"].kwargs.get("person_id")
+
+        # CHECK ROOM OCCUPIED OR NOT
+        if RoomAllotment.objects.filter(room_id=attrs["room"]).exists():
+            raise serializers.ValidationError("Room already occupied.!")
+
         validation_person(person_id)
         return attrs
 
@@ -116,18 +115,33 @@ class RentalDetailsSerializer(serializers.ModelSerializer):
             }
         }
 
-    def validate(self, attrs):
-        person_id = self.context["view"].kwargs.get("person_id")
-        validation_person(person_id)
-        return attrs
-
 
 class TransactionsSerializer(serializers.ModelSerializer):
     tnx_no = serializers.CharField(required=False, allow_blank=True)
+    room = serializers.IntegerField(
+        source="rm_map.room.r_no",
+        read_only=True
+    )
+    building_name = serializers.CharField(
+        source="rm_map.room.build_name",
+        read_only=True
+    )
 
     class Meta:
         model = Transaction
-        fields = "__all__"
+        fields = [
+        "id",
+        "tnx_no",
+        "amount",
+        "is_rent",
+        "payment_mode",
+        "comment",
+        "receipt",
+        "ts",
+        "rm_map",
+        "room",
+        "building_name",
+        ]
         extra_kwargs = {
             "rm_map": {
                 "required": False

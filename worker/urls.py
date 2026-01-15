@@ -6,7 +6,11 @@ from worker.views import (
     RentalDetailsByPersonAPIView,
     RoomAllotmentByPersonAPIView,
     TransactionsByPersonAPIView,
-    ContactByPersonAPIView, RoomMasterAPIView, PersonAPIView
+    ContactByPersonAPIView,
+    RoomMasterAPIView,
+    PersonAPIView,
+    ListAllTransactionsByPersonAPIView,
+    ListAllRentalDetailsByPersonAPIView
 )
 
 urlpatterns = [
@@ -26,10 +30,10 @@ urlpatterns = [
 
     path("person/<int:person_id>/room-allotment/", RoomAllotmentByPersonAPIView.as_view(), name="room-allotment"),
 
-    path("person/<int:person_id>/room-allotment/<int:rm_map>/rental-details/", RentalDetailsByPersonAPIView.as_view(),
-         name="rental-details"),
+    path("room-allotment/<int:rm_map>/rental-details/", RentalDetailsByPersonAPIView.as_view(), name="rental-details"),
+    path("person/<int:person_id>/rental-details/", ListAllRentalDetailsByPersonAPIView.as_view(), name="rental-details"),
 
-    path("person/<int:person_id>/room-allotment/<int:rm_map>/transactions/", TransactionsByPersonAPIView.as_view(),
-         name="transactions"),
+    path("room-allotment/<int:rm_map>/transactions/", TransactionsByPersonAPIView.as_view(), name="transactions"),
+    path("person/<int:person_id>/transactions/", ListAllTransactionsByPersonAPIView.as_view(), name="transactions"),
 
 ]
