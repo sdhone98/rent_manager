@@ -75,6 +75,11 @@ class Docs(models.Model):
         db_table = "docs"
         managed = True
 
+    def save(self, *args, **kwargs):
+        if self.aadhar_no:
+            self.aadhar_no = f"{self.aadhar_no[:4]} {self.aadhar_no[4:8]} {self.aadhar_no[8:]}"
+
+
 
 class RoomMaster(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -121,7 +126,7 @@ class RoomMaster(models.Model):
 
 class MeterDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    r_no = models.OneToOneField(RoomMaster, on_delete=models.CASCADE, related_name="meter_details", unique=True)
+    r_no = models.ForeignKey(RoomMaster, on_delete=models.CASCADE, related_name="meter_details", unique=True)
     meter_no = models.PositiveIntegerField(unique=True)
     bu_code = models.PositiveSmallIntegerField()
     con_type = models.CharField(max_length=12, default=ElectricityConsumer.LT)

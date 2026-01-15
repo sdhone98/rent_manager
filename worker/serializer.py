@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import serializers
 from worker.models import RoomMaster, Person, Address, Docs, RoomAllotment, Transaction, Contact, RentalDetails
 
@@ -78,6 +80,14 @@ class DocsSerializer(serializers.ModelSerializer):
             )
 
     def validate(self, attrs):
+
+        # AADHAR NO SHOULD NE 12 CHAR
+        if len(attrs["aadhaar_no"]) == 12:
+            raise serializers.ValidationError("Aadhar number must be 12 digits.")
+
+        # VALIDATE PAN NO
+        validation_person(attrs["pan_no"])
+
         person_id = self.context["view"].kwargs.get("person_id")
 
         # PREVENT DUPLICATE CONTACT
@@ -130,17 +140,17 @@ class TransactionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
         fields = [
-        "id",
-        "tnx_no",
-        "amount",
-        "is_rent",
-        "payment_mode",
-        "comment",
-        "receipt",
-        "ts",
-        "rm_map",
-        "room",
-        "building_name",
+            "id",
+            "tnx_no",
+            "amount",
+            "is_rent",
+            "payment_mode",
+            "comment",
+            "receipt",
+            "ts",
+            "rm_map",
+            "room",
+            "building_name",
         ]
         extra_kwargs = {
             "rm_map": {
@@ -171,3 +181,22 @@ def validation_amount(value):
     if value < 0:
         raise serializers.ValidationError("Amount must be greater than zero.")
     return value
+
+
+def validate_pan(pan: str) -> bool | None:
+    if not pan:
+        return False
+
+    pan = pan.upper()
+
+    pattern = (
+        r'^[A-Z]{3}'  # First 3 alphabets
+        r'[PCFHATBLJG]'  # 4th char - Entity type
+        r'[A-Z]'  # 5th char - Surname initial
+        r'[0-9]{4}'  # Next 4 digits
+        r'[A-Z]$'  # Last char - checksum
+    )
+
+    if not bool(re.match(pattern, pan)):
+        raise serializers.ValidationError("Amount must be greater than zero.")
+    return None
