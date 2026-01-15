@@ -19,10 +19,19 @@
         .invoice-box {
             max-width: 800px;
             margin: auto;
-            padding: 30px;
+            padding: 10px;
             border: 1px solid #eee;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            box-shadow: 0 0 10px rgba(0,0,0,.25);
+            border-radius: 8px;
         }
+
+        .inner-box {
+
+            padding: 20px;
+            border: 1px dashed #bbbec4;
+            border-radius: 8px;
+         }
+
 
         .header {
             display: flex;
@@ -69,6 +78,11 @@
             color: #222;
             border-left: 4px solid #444;
             padding-left: 8px;
+        }
+
+        .section-description {
+            display: flex;
+            justify-content: space-between;
         }
 
         table {
@@ -129,12 +143,6 @@
             background-color: #444;
         }
 
-        /* ACTION BUTTONS */
-        .action-bar {
-            text-align: right;
-            margin-bottom: 15px;
-        }
-
         .action-btn {
             background: #444;
             color: #fff;
@@ -162,11 +170,9 @@
 <body>
 
 <div class="invoice-box">
+    <div class="inner-box">
 
-    <!-- HEADER -->
-        <div class="action-bar">
-            <button class="action-btn" onclick="window.print()">Download / Print</button>
-        </div>
+            <!-- HEADER -->
     <div class="header">
         <div class="company-details">
             <h2>Dhone Rental Management</h2>
@@ -178,11 +184,6 @@
         <div class="invoice-details">
             <p><b>Invoice No:</b> {{ transaction.tnx_no }}</p>
             <p><b>Date:</b> {{ transaction.ts }}</p>
-            <p>
-                <span class="badge">
-                    {{ transaction.payment_mode }}
-                </span>
-            </p>
         </div>
     </div>
 
@@ -222,7 +223,15 @@
 
     <!-- DESCRIPTION DETAILS -->
     <div class="section">
+        <div class="section-description">
+
         <p><b>Description:</b> {{ transaction.comment }} </p>
+                    <p>
+                <span class="badge">
+                    {{ transaction.payment_mode }}
+                </span>
+            </p>
+        </div>
     </div>
 
     <!-- TOTAL -->
@@ -239,7 +248,12 @@
     <div class="footer">
         <p>This is a system generated invoice. No signature required.</p>
         <p>Thank you for your payment.</p>
+        <button class="action-btn" onclick="window.print()">Download / Print</button>
     </div>
+
+    </div>
+
+
 
 </div>
 
