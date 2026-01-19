@@ -106,13 +106,29 @@ class RoomAllotmentSerializer(serializers.ModelSerializer):
         exclude = ("person",)
 
     def validate(self, attrs):
-        person_id = self.context["view"].kwargs.get("person_id")
+        request = self.context.get("request")
 
-        # CHECK ROOM OCCUPIED OR NOT
-        if RoomAllotment.objects.filter(room_id=attrs["room"]).exists():
-            raise serializers.ValidationError("Room already occupied.!")
+        # CHECK ROOM OCCUPIED OR NOT ( WHILE CREATING )
+        if request and request.method == "POST":
+            person_id = self.context["view"].kwargs.get("person_id")
 
-        validation_person(person_id)
+            if RoomAllotment.objects.filter(
+                    room_id=attrs["room"],
+                    is_active=True
+            ).exists():
+                raise serializers.ValidationError("Room already occupied!")
+
+            validation_person(person_id)
+
+        # CHECK ROOM OCCUPIED OR NOT ( WHILE CREATING )
+        if request and request.method == "PATCH":
+            pk = self.context["view"].kwargs.get("pk")
+            if RoomAllotment.objects.filter(
+                    id=pk,
+                    is_active=False
+            ).exists():
+                raise serializers.ValidationError("Room already De Activated.!")
+
         return attrs
 
 

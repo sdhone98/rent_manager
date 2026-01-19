@@ -1,8 +1,5 @@
 import os
-import random
-
 from django.template.loader import render_to_string
-
 from rent_manager import settings
 
 

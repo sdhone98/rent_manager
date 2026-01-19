@@ -1,8 +1,12 @@
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from resources.generate_transaction_pdf import generate_transaction_html
-from resources.send_transaction_email import send_transaction_email
+from resources.send_transaction_email import (
+    send_transaction_email,
+    send_de_allotment_email
+)
 from worker.models import (
     RoomMaster,
     RoomAllotment,
@@ -169,8 +173,9 @@ class ListAllRentalDetailsByPersonAPIView(
 
 
 class RoomAllotmentByPersonAPIView(
+    generics.ListAPIView,
     generics.CreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    generics.RetrieveUpdateDestroyAPIView,
 ):
     serializer_class = RoomAllotmentSerializer
     lookup_field = "person_id"
@@ -183,6 +188,30 @@ class RoomAllotmentByPersonAPIView(
     @transaction.atomic
     def perform_create(self, serializer):
         serializer.save(person_id=self.kwargs["person_id"])
+
+
+class RoomDeAllotmentByPersonAPIView(
+    generics.UpdateAPIView,
+    generics.ListAPIView,
+):
+    serializer_class = RoomAllotmentSerializer
+    lookup_field = "pk"
+
+    def get_queryset(self):
+        return RoomAllotment.objects.filter(
+            id=self.kwargs["pk"]
+        )
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        instance = serializer.save(
+            is_active=False,
+            actual_end_date=self.request.data.get("actual_end_date", timezone.now().date())
+        )
+
+        # SEND DE ALLOTMENT EMAIL WITH DETAILS
+        send_de_allotment_email(instance)
+
 
 
 class TransactionsByPersonAPIView(
@@ -209,8 +238,8 @@ class TransactionsByPersonAPIView(
         transaction_instance.receipt = f"{file_name}"
         transaction_instance.save(update_fields=["receipt"])
 
-        send_transaction_email(transaction)
-        # send_whatsapp_receipt(transaction)
+        send_transaction_email(transaction_instance)
+        # send_whatsapp_receipt(transaction_instance)
 
 
 class ListAllTransactionsByPersonAPIView(

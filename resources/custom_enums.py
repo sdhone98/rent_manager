@@ -14,6 +14,12 @@ class FloorCodes(models.TextChoices):
     FOURTH = "Fourth Floor", "FOURTH"
 
 
+class RoomLayout(models.TextChoices):
+    _1_RK = "1RK", "1RK"
+    _1_BHK = "1BHK", "1BHK"
+    _2_BHK = "2BHK", "2BHK"
+
+
 class RoleChoices(models.TextChoices):
     TENANT = "Tenant", "TENANT"
     OWNER = "Owner", "OWNER"

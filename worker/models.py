@@ -9,7 +9,8 @@ from resources.custom_enums import (
     FloorCodes,
     BuildingCodes,
     PaymentModeChoices,
-    NoticeType
+    NoticeType,
+    RoomLayout
 )
 from resources.person_doc_file_name_generator import (
     aadhaar_upload_path,
@@ -80,7 +81,6 @@ class Docs(models.Model):
             self.aadhar_no = f"{self.aadhar_no[:4]} {self.aadhar_no[4:8]} {self.aadhar_no[8:]}"
 
 
-
 class RoomMaster(models.Model):
     id = models.BigAutoField(primary_key=True)
     r_no = models.IntegerField()
@@ -88,6 +88,8 @@ class RoomMaster(models.Model):
     add = models.CharField(max_length=255, null=True, blank=True)
     build_name = models.CharField(max_length=50, choices=BuildingCodes.choices)
     r_code = models.CharField(max_length=20, unique=True)
+    area = models.IntegerField(null=True, blank=True)
+    layout = models.CharField(max_length=255, choices=RoomLayout.choices, null=True, blank=True)
 
     class Meta:
         db_table = "room_master"
@@ -123,6 +125,9 @@ class RoomMaster(models.Model):
     def __str__(self):
         return f"R-{self.r_code}"
 
+    def room_size(self):
+        return f"{self.area} sq.ft."
+
 
 class MeterDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -145,8 +150,8 @@ class RoomAllotment(models.Model):
     room = models.ForeignKey(RoomMaster, on_delete=models.CASCADE, related_name="room_allotments")
     start_date = models.DateField()
     end_date = models.DateField()
+    actual_end_date = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=False)
-    agg_available = models.BooleanField(default=False)
     ts = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -160,9 +165,25 @@ class RoomAllotment(models.Model):
         if self.start_date and not self.end_date:
             self.end_date = self.start_date + relativedelta(months=11, days=-1)
 
-        # ROOM ALLOTTED
-        self.is_active = True
+            # ROOM ALLOTTED
+            self.is_active = True
+
         super().save(*args, **kwargs)
+
+
+class RoomAllotmentRelatedDetails(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="room_allotment_related_details", unique=True)
+    agg_available = models.BooleanField(default=False)
+    is_painted = models.BooleanField(default=False)
+    is_water_tank = models.BooleanField(default=False)
+    is_grill = models.BooleanField(default=False)
+    is_ele_bill = models.BooleanField(default=False)
+    ts = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "room_allotment_related_details"
+        managed = True
 
 
 class RentalDetails(models.Model):
