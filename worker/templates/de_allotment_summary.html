@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: "Helvetica", Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .invoice-box {
+            max-width: 800px;
+            margin: auto;
+            padding: 10px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0,0,0,.25);
+            border-radius: 8px;
+        }
+        .inner-box {
+
+            padding: 20px;
+            border: 1px dashed #bbbec4;
+            border-radius: 8px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #222;
+            border-left: 4px solid #444;
+            padding-left: 8px;
+        }
+
+         .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .company-details h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #222;
+        }
+
+        .company-details p {
+            margin: 3px 0;
+            font-size: 11px;
+            color: #555;
+        }
+
+        .section-date {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        }
+
+         .section-date p{
+            margin: 0px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 11px;
+            color: #777;
+            border-top: 1px dashed #ccc;
+            padding-top: 10px;
+        }
+
+                .action-btn {
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            margin-left: 8px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .action-btn:hover {
+            background: #222;
+        }
+    </style>
+</head>
+<body>
+
+<div class="invoice-box">
+    <div class="inner-box">
+        <div class="header">
+            <div class="company-details">
+                <h2>Dhone Rental Management</h2>
+                <p>Nandivali, Kalyan East</p>
+                <p>Maharashtra - 421306</p>
+                <p>Email: {{COMPANY_EMAIL}} </p>
+            </div>
+        </div>
+        <div class="section-date">
+
+            <p><b> {{ date }} </b></p>
+        </div>
+        <p>Hi {{ f_name }},</p>
+
+        <p>Your room has been successfully de-allotted.</p>
+
+        <div class="section-title">Tenant Details</div>
+
+        <p>
+            <b>Tenant Name:</b> {{ f_name }} {{ m_name }} {{ l_name }}<br>
+            <b>Building Name:</b> {{ building_name }}<br>
+            <b>Room No:</b> {{ room_no }}<br>
+            <b>Occupancy Duration:</b> {{ start_date }} - {{ end_date }} <br>
+            <b>Actual Leaving Date:</b> {{ actual_end_date }} <br>
+        </p>
+
+        <div class="section-title">Transaction Details</div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Sr.No.</th>
+                <th>Transaction No</th>
+                <th>Date</th>
+                <th>Payment Mode</th>
+                <th>Amount (₹)</th>
+                <th>Comment</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for t in transactions %}
+            <tr>
+                <td>{{ t.no }}</td>
+                <td>{{ t.tnx_no }}</td>
+                <td>{{ t.ts|date:"d M Y" }}</td>
+                <td>{{ t.payment_mode }}</td>
+                <td>{{ t.amount }}</td>
+                <td>{{ t.comment|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align:center;">No transactions found</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            <p>This is a system generated invoice. No signature required.</p>
+            <p>Thank you for your payment.</p>
+            <button class="action-btn" onclick="window.print()">Download / Print</button>
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>
