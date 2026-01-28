@@ -55,6 +55,27 @@ class RoomMasterAPIView(
         serializer.save()
 
 
+class RoomMasterDetailAPIView(
+    generics.RetrieveUpdateDestroyAPIView,
+):
+    serializer_class = RoomMasterSerializer
+
+    def get_queryset(self):
+        queryset = RoomMaster.objects.filter(id=self.kwargs['pk'])
+        building_code = self.request.query_params.get("building_code", False)
+
+        if building_code:
+            queryset = queryset.filter(
+                build_name=building_code
+            )
+
+        return queryset
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        serializer.save()
+
+
 class AvailableRoomsView(
     generics.ListAPIView
 ):
@@ -66,16 +87,16 @@ class AvailableRoomsView(
         queryset = RoomMaster.objects.all()
 
         active_rooms = RoomAllotment.objects.filter(
-            is_active=False
+            is_active=True
         ).distinct()
 
         if active_rooms:
-            queryset = queryset.filter(
-                id__in=active_rooms
+            queryset = queryset.exclude(
+                id__in=active_rooms.values_list("room_id", flat=True)
             )
 
         if building_code:
-            queryset = queryset.filter(build_name=building_code)
+            queryset = queryset.filter(build_name=building_code.replace(" ", "_"))
 
         return queryset
 
@@ -133,7 +154,8 @@ class AddressByPersonAPIView(
 
 class DocumentsByPersonAPIView(
     generics.CreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    generics.RetrieveUpdateDestroyAPIView,
+    generics.ListAPIView
 ):
     serializer_class = DocsSerializer
     lookup_field = "person_id"
@@ -211,7 +233,6 @@ class RoomDeAllotmentByPersonAPIView(
 
         # SEND DE ALLOTMENT EMAIL WITH DETAILS
         send_de_allotment_email(instance)
-
 
 
 class TransactionsByPersonAPIView(

@@ -57,7 +57,7 @@ class Address(models.Model):
     old_add = models.TextField(max_length=255)
     st = models.CharField(max_length=50, choices=StateCode.choices, default=StateCode.MAHARASHTRA)
     ct = models.CharField(max_length=70)
-    pn_code = models.BigIntegerField()
+    pn_code = models.TextField(max_length=6)
 
     class Meta:
         db_table = "address"
@@ -75,10 +75,6 @@ class Docs(models.Model):
     class Meta:
         db_table = "docs"
         managed = True
-
-    def save(self, *args, **kwargs):
-        if self.aadhar_no:
-            self.aadhar_no = f"{self.aadhar_no[:4]} {self.aadhar_no[4:8]} {self.aadhar_no[8:]}"
 
 
 class RoomMaster(models.Model):
@@ -173,7 +169,8 @@ class RoomAllotment(models.Model):
 
 class RoomAllotmentRelatedDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="room_allotment_related_details", unique=True)
+    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="room_allotment_related_details",
+                               unique=True)
     agg_available = models.BooleanField(default=False)
     is_painted = models.BooleanField(default=False)
     is_water_tank = models.BooleanField(default=False)
@@ -188,10 +185,10 @@ class RoomAllotmentRelatedDetails(models.Model):
 
 class RentalDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    deposit = models.FloatField()
-    rent = models.FloatField()
-    maintenance = models.FloatField()
-    rent_total = models.FloatField(default=0)
+    deposit = models.IntegerField()
+    rent = models.IntegerField()
+    maintenance = models.IntegerField()
+    rent_total = models.IntegerField(default=0)
     rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="rental_details", unique=True)
     ts = models.DateTimeField(auto_now=True)
 
@@ -201,7 +198,7 @@ class RentalDetails(models.Model):
 
     def save(self, *args, **kwargs):
         if self.rent and self.maintenance:
-            self.rent_total = float(self.rent + self.maintenance)
+            self.rent_total = self.rent + self.maintenance
         super().save(*args, **kwargs)
 
 

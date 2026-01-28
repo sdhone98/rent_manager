@@ -16,6 +16,18 @@ class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Person
         fields = "__all__"
+        extra_kwargs = {
+            "email": {
+                "error_messages": {
+                    "unique": "This email is already registered."
+                }
+            },
+            "username": {
+                "error_messages": {
+                    "unique": "This username is already taken."
+                }
+            }
+        }
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -55,23 +67,29 @@ class DocsSerializer(serializers.ModelSerializer):
         exclude = ("person",)
 
     def validate_aadhaar_doc(self, file):
-        self._validate_pdf(file, field_name="Aadhaar document")
+        self.validate_pdf(file, field_name="Aadhaar document")
         return file
+
+    def validate_aadhar_no(self, value):
+        value = value.replace(" ", "")
+        if len(value) != 12:
+            raise serializers.ValidationError("Aadhar number must be 12 digits..")
+        return f"{value[:4]} {value[4:8]} {value[8:]}"
 
     def validate_pan_doc(self, file):
-        self._validate_pdf(file, field_name="PAN document")
+        self.validate_pdf(file, field_name="PAN document")
         return file
 
-    def _validate_pdf(self, file, field_name):
+    def validate_pdf(self, file, field_name):
         if not file.name.lower().endswith(".pdf"):
             raise serializers.ValidationError(
                 f"{field_name} must be a PDF file."
             )
 
-        if file.content_type != "application/pdf":
-            raise serializers.ValidationError(
-                f"{field_name} must be a valid PDF."
-            )
+        # if file.content_type != "application/pdf":
+        #     raise serializers.ValidationError(
+        #         f"{field_name} must be a valid PDF."
+        #     )
 
         max_size = 5 * 1024 * 1024
         if file.size > max_size:
@@ -80,10 +98,6 @@ class DocsSerializer(serializers.ModelSerializer):
             )
 
     def validate(self, attrs):
-        # AADHAR NO SHOULD NE 12 CHAR
-        if attrs.get("aadhar_no"):
-            if len(attrs["aadhar_no"]) != 12:
-                raise serializers.ValidationError("Aadhar number must be 12 digits.")
 
         # VALIDATE PAN NO
         if attrs.get("pan_no"):
