@@ -2,85 +2,87 @@ from django.db import models
 
 
 class BuildingCodes(models.TextChoices):
-    VAMAN_NIVAS = "Vaman_Nivas", "VAMAN_NIVAS"
-    ABHISHEK_APT = "Abhishek_Apartment", "ABHISHEK_APT"
+    VAMAN_NIVAS = "Vaman Nivas"
+    ABHISHEK_APT = "Abhishek Apartment"
 
 
-class FloorCodes(models.TextChoices):
-    GROUND = "Ground Floor", "GROUND"
-    FIRST = "First Floor", "FIRST"
-    SECOND = "Second Floor", "SECOND"
-    THIRD = "Third Floor", "THIRD"
-    FOURTH = "Fourth Floor", "FOURTH"
+class FloorCodes:
+    GROUND = 1
+    FIRST = 2
+    SECOND = 3
+    THIRD = 4
+    FOURTH = 5
+
+    CHOICES = (
+        (GROUND, GROUND),
+        (FIRST, FIRST),
+        (SECOND, SECOND),
+        (THIRD, THIRD),
+        (FOURTH, FOURTH),
+    )
 
 
 class RoomLayout(models.TextChoices):
-    _1_RK = "1RK", "1RK"
-    _1_BHK = "1BHK", "1BHK"
-    _2_BHK = "2BHK", "2BHK"
+    ONE_RK = "1RK"
+    ONE_BHK = "1BHK"
+    TWO_BHK = "2BHK"
 
 
 class RoleChoices(models.TextChoices):
-    TENANT = "Tenant", "TENANT"
-    OWNER = "Owner", "OWNER"
-    MANAGER = "Manager", "MANAGER"
+    TENANT = "Tenant"
+    OWNER = "Owner"
+    MANAGER = "Manager"
 
 
 class PaymentModeChoices(models.TextChoices):
-    CASH = "Cash", "CASH"
-    UPI = "UPI", "UPI"
-    BANK_TRANSFER = "Bank Transfer", "BANK_TRANSFER"
-    CHEQUE = "Cheque", "CHEQUE"
-
-
-from django.db import models
+    CASH = "Cash"
+    UPI = "UPI"
+    BANK_TRANSFER = "Bank Transfer"
+    CHEQUE = "Cheque"
 
 
 class StateCode(models.TextChoices):
-    ANDHRA_PRADESH = "Andhra Pradesh", "ANDHRA_PRADESH"
-    ARUNACHAL_PRADESH = "Arunachal Pradesh", "ARUNACHAL_PRADESH"
-    ASSAM = "Assam", "ASSAM"
-    BIHAR = "Bihar", "BIHAR"
-    CHHATTISGARH = "Chhattisgarh", "CHHATTISGARH"
-    GOA = "Goa", "GOA"
-    GUJARAT = "Gujarat", "GUJARAT"
-    HARYANA = "Haryana", "HARYANA"
-    HIMACHAL_PRADESH = "Himachal Pradesh", "HIMACHAL_PRADESH"
-    JHARKHAND = "Jharkhand", "JHARKHAND"
-    KARNATAKA = "Karnataka", "KARNATAKA"
-    KERALA = "Kerala", "KERALA"
-    MADHYA_PRADESH = "Madhya Pradesh", "MADHYA_PRADESH"
-    MAHARASHTRA = "Maharashtra", "MAHARASHTRA"
-    MANIPUR = "Manipur", "MANIPUR"
-    MEGHALAYA = "Meghalaya", "MEGHALAYA"
-    MIZORAM = "Mizoram", "MIZORAM"
-    NAGALAND = "Nagaland", "NAGALAND"
-    ODISHA = "Odisha", "ODISHA"
-    PUNJAB = "Punjab", "PUNJAB"
-    RAJASTHAN = "Rajasthan", "RAJASTHAN"
-    SIKKIM = "Sikkim", "SIKKIM"
-    TAMIL_NADU = "Tamil Nadu", "TAMIL_NADU"
-    TELANGANA = "Telangana", "TELANGANA"
-    TRIPURA = "Tripura", "TRIPURA"
-    UTTAR_PRADESH = "Uttar Pradesh", "UTTAR_PRADESH"
-    UTTARAKHAND = "Uttarakhand", "UTTARAKHAND"
-    WEST_BENGAL = "West Bengal", "WEST_BENGAL"
+    ANDHRA_PRADESH = "Andhra Pradesh"
+    ARUNACHAL_PRADESH = "Arunachal Pradesh"
+    ASSAM = "Assam"
+    BIHAR = "Bihar"
+    CHHATTISGARH = "Chhattisgarh"
+    GOA = "Goa"
+    GUJARAT = "Gujarat"
+    HARYANA = "Haryana"
+    HIMACHAL_PRADESH = "Himachal Pradesh"
+    JHARKHAND = "Jharkhand"
+    KARNATAKA = "Karnataka"
+    KERALA = "Kerala"
+    MADHYA_PRADESH = "Madhya Pradesh"
+    MAHARASHTRA = "Maharashtra"
+    MANIPUR = "Manipur"
+    MEGHALAYA = "Meghalaya"
+    MIZORAM = "Mizoram"
+    NAGALAND = "Nagaland"
+    ODISHA = "Odisha"
+    PUNJAB = "Punjab"
+    RAJASTHAN = "Rajasthan"
+    SIKKIM = "Sikkim"
+    TAMIL_NADU = "Tamil Nadu"
+    TELANGANA = "Telangana"
+    TRIPURA = "Tripura"
+    UTTAR_PRADESH = "Uttar Pradesh"
+    UTTARAKHAND = "Uttarakhand"
+    WEST_BENGAL = "West Bengal"
 
-    ANDAMAN_NICOBAR = "Andaman and Nicobar Islands", "ANDAMAN_NICOBAR"
-    CHANDIGARH = "Chandigarh", "CHANDIGARH"
-    DADRA_NAGAR_HAVELI_DAMAN_DIU = (
-        "Dadra & Nagar Haveli and Daman & Diu",
-        "DADRA_NAGAR_HAVELI_DAMAN_DIU",
-    )
-    DELHI = "Delhi", "DELHI"
-    JAMMU_KASHMIR = "Jammu and Kashmir", "JAMMU_KASHMIR"
-    LADAKH = "Ladakh", "LADAKH"
-    LAKSHADWEEP = "Lakshadweep", "LAKSHADWEEP"
-    PUDUCHERRY = "Puducherry", "PUDUCHERRY"
+    ANDAMAN_NICOBAR = "Andaman and Nicobar Islands"
+    CHANDIGARH = "Chandigarh"
+    DADRA_NAGAR_HAVELI_DAMAN_DIU = "Dadra & Nagar Haveli and Daman & Diu"
+    DELHI = "Delhi"
+    JAMMU_KASHMIR = "Jammu and Kashmir"
+    LADAKH = "Ladakh"
+    LAKSHADWEEP = "Lakshadweep"
+    PUDUCHERRY = "Puducherry"
 
 
 class NoticeType(models.TextChoices):
-    RENT_ALERT = "Rent Alert", "RENT_ALERT"
-    RECEIPT_GEN = "Receipt Generation", "RECEIPT_GEN"
-    NORMAL = "Normal", "NORMAL"
-    OTHER = "Other", "OTHER"
+    RENT_ALERT = "Rent Alert"
+    RECEIPT_GEN = "Receipt Generation"
+    NORMAL = "Normal"
+    OTHER = "Other"

@@ -80,10 +80,11 @@ class Docs(models.Model):
 class RoomMaster(models.Model):
     id = models.BigAutoField(primary_key=True)
     r_no = models.IntegerField()
-    flr_no = models.CharField(max_length=20, choices=FloorCodes.choices)
+    flr_no = models.PositiveSmallIntegerField()
     add = models.CharField(max_length=255, null=True, blank=True)
     build_name = models.CharField(max_length=50, choices=BuildingCodes.choices)
     r_code = models.CharField(max_length=20, unique=True)
+    code_name = models.CharField(max_length=20, unique=True)
     area = models.IntegerField(null=True, blank=True)
     layout = models.CharField(max_length=255, choices=RoomLayout.choices, null=True, blank=True)
 
@@ -94,6 +95,7 @@ class RoomMaster(models.Model):
     def save(self, *args, **kwargs):
         # Always generate room code
         self.r_code = f"{self.r_no}_{self.build_name}"
+        self.code_name = f"{self.r_no}-{self.build_name}"
 
         # ADDRESS TEMPLATES PER BUILDING
         address_templates = {
@@ -206,7 +208,7 @@ class Transaction(models.Model):
     id = models.BigAutoField(primary_key=True)
     tnx_no = models.CharField(max_length=20, unique=True)
     rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="transactions")
-    amount = models.FloatField()
+    amount = models.IntegerField()
     is_rent = models.BooleanField(default=False)
     payment_mode = models.CharField(max_length=30, choices=PaymentModeChoices.choices, default=PaymentModeChoices.CASH)
     comment = models.CharField(max_length=255, null=True, blank=True)

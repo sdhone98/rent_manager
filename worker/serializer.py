@@ -146,6 +146,38 @@ class RoomAllotmentSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class RoomAllotmentByRoomNumberSerializer(serializers.ModelSerializer):
+    person = serializers.SerializerMethodField()
+    room = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RoomAllotment
+        fields = [
+            "id",
+            "person",
+            "room"
+        ]
+
+    def get_person(self, obj):
+        return {
+            "id": obj.person.id,
+            "f_name": obj.person.f_name,
+            "m_name": obj.person.m_name,
+            "l_name": obj.person.l_name,
+            "email": obj.person.email,
+        }
+
+    def get_room(self, obj):
+        return {
+            "id": obj.room.id,
+            "r_no": obj.room.r_no,
+            "code_name": obj.room.code_name,
+            "build_name": obj.room.build_name,
+            "layout": obj.room.layout,
+            "area": obj.room.area
+        }
+
+
 class RentalDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RentalDetails
@@ -159,8 +191,10 @@ class RentalDetailsSerializer(serializers.ModelSerializer):
 
 class TransactionsSerializer(serializers.ModelSerializer):
     tnx_no = serializers.CharField(required=False, allow_blank=True)
-    room = serializers.IntegerField(
-        source="rm_map.room.r_no",
+    person = serializers.SerializerMethodField()
+    room = serializers.SerializerMethodField()
+    code_name = serializers.CharField(
+        source="rm_map.room.code_name",
         read_only=True
     )
     building_name = serializers.CharField(
@@ -180,13 +214,34 @@ class TransactionsSerializer(serializers.ModelSerializer):
             "receipt",
             "ts",
             "rm_map",
+            "code_name",
             "room",
+            "person",
             "building_name",
         ]
         extra_kwargs = {
             "rm_map": {
                 "required": False
             }
+        }
+
+    def get_person(self, obj):
+        return {
+            "id": obj.rm_map.person.id,
+            "f_name": obj.rm_map.person.f_name,
+            "m_name": obj.rm_map.person.m_name,
+            "l_name": obj.rm_map.person.l_name,
+            "email": obj.rm_map.person.email,
+        }
+
+    def get_room(self, obj):
+        return {
+            "id": obj.rm_map.room.id,
+            "r_no": obj.rm_map.room.r_no,
+            "code_name": obj.rm_map.room.code_name,
+            "build_name": obj.rm_map.room.build_name,
+            "layout": obj.rm_map.room.layout,
+            "area": obj.rm_map.room.area
         }
 
     def validate(self, attrs):
