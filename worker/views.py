@@ -16,7 +16,8 @@ from worker.models import (
     Docs,
     RentalDetails,
     Transaction,
-    Contact
+    Contact,
+    RoomAllotmentExtra
 )
 from worker.serializer import (
     RoomMasterSerializer,
@@ -27,7 +28,8 @@ from worker.serializer import (
     TransactionsSerializer,
     ContactSerializer,
     RentalDetailsSerializer,
-    RoomAllotmentByRoomNumberSerializer
+    RoomAllotmentByRoomNumberSerializer,
+    RoomAllotmentExtraSerializer
 )
 
 
@@ -171,7 +173,7 @@ class DocumentsByPersonAPIView(
         serializer.save(person_id=self.kwargs["person_id"])
 
 
-class RentalDetailsByPersonAPIView(
+class RentalDetailsByRoomAllotmentAPIView(
     generics.CreateAPIView,
     generics.RetrieveUpdateDestroyAPIView
 ):
@@ -180,6 +182,23 @@ class RentalDetailsByPersonAPIView(
 
     def get_queryset(self):
         return RentalDetails.objects.filter(rm_map=self.kwargs["rm_map"])
+
+    @transaction.atomic
+    def perform_create(self, serializer):
+        serializer.save(rm_map_id=self.kwargs["rm_map"])
+
+
+class RoomAllotmentExtraSerializerByRoomAllotmentAPIView(
+    generics.CreateAPIView,
+    generics.RetrieveUpdateDestroyAPIView
+):
+    serializer_class = RoomAllotmentExtraSerializer
+    lookup_field = "rm_map"
+
+    def get_queryset(self):
+        return RoomAllotmentExtra.objects.filter(
+            rm_map=self.kwargs["rm_map"]
+        )
 
     @transaction.atomic
     def perform_create(self, serializer):

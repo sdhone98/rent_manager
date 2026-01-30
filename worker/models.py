@@ -169,15 +169,19 @@ class RoomAllotment(models.Model):
         super().save(*args, **kwargs)
 
 
-class RoomAllotmentRelatedDetails(models.Model):
+class RoomAllotmentExtra(models.Model):
     id = models.BigAutoField(primary_key=True)
-    rm_map = models.ForeignKey(RoomAllotment, on_delete=models.CASCADE, related_name="room_allotment_related_details",
-                               unique=True)
+    rm_map = models.OneToOneField(
+        RoomAllotment,
+        on_delete=models.CASCADE,
+        related_name="extra",
+        editable=False,
+    )
     agg_available = models.BooleanField(default=False)
     is_painted = models.BooleanField(default=False)
     is_water_tank = models.BooleanField(default=False)
     is_grill = models.BooleanField(default=False)
-    is_ele_bill = models.BooleanField(default=False)
+    is_ele_bill_clear = models.BooleanField(default=False)
     ts = models.DateTimeField(auto_now=True)
 
     class Meta:

@@ -3,7 +3,6 @@ from worker.views import (
     AvailableRoomsView,
     AddressByPersonAPIView,
     DocumentsByPersonAPIView,
-    RentalDetailsByPersonAPIView,
     RoomAllotmentByPersonAPIView,
     TransactionsByPersonAPIView,
     ContactByPersonAPIView,
@@ -14,7 +13,9 @@ from worker.views import (
     RoomDeAllotmentByPersonAPIView,
     RoomMasterDetailAPIView,
     RoomAllotmentByRoomNumberAPIView,
-    TransactionsAPIView
+    TransactionsAPIView,
+    RentalDetailsByRoomAllotmentAPIView,
+    RoomAllotmentExtraSerializerByRoomAllotmentAPIView
 )
 
 urlpatterns = [
@@ -37,8 +38,14 @@ urlpatterns = [
     path("room-allotment/<int:room__r_no>/", RoomAllotmentByRoomNumberAPIView.as_view(), name="room-allotment"),
     path("room-de-allotment/<int:pk>/", RoomDeAllotmentByPersonAPIView.as_view(), name="room-de-allotment"),
 
-    path("room-allotment/<int:rm_map>/rental-details/", RentalDetailsByPersonAPIView.as_view(), name="rental-details"),
-    path("person/<int:person_id>/rental-details/", ListAllRentalDetailsByPersonAPIView.as_view(),
+    path("room-allotment/<int:rm_map>/rental-details/",
+         RentalDetailsByRoomAllotmentAPIView.as_view(),
+         name="rental-details"),
+    path("room-allotment/<int:rm_map>/rental-related-details/",
+         RoomAllotmentExtraSerializerByRoomAllotmentAPIView.as_view(),
+         name="rental-related-details"),
+    path("person/<int:person_id>/rental-details/",
+         ListAllRentalDetailsByPersonAPIView.as_view(),
          name="rental-details"),
 
     path("room-allotment/<int:rm_map>/transactions/", TransactionsByPersonAPIView.as_view(), name="transactions"),

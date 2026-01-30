@@ -1,7 +1,17 @@
 import re
 
 from rest_framework import serializers
-from worker.models import RoomMaster, Person, Address, Docs, RoomAllotment, Transaction, Contact, RentalDetails
+from worker.models import (
+    RoomMaster,
+    Person,
+    Address,
+    Docs,
+    RoomAllotment,
+    Transaction,
+    Contact,
+    RentalDetails,
+    RoomAllotmentExtra
+)
 
 
 class RoomMasterSerializer(serializers.ModelSerializer):
@@ -187,6 +197,48 @@ class RentalDetailsSerializer(serializers.ModelSerializer):
                 "required": False
             }
         }
+
+
+class RoomAllotmentExtraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomAllotmentExtra
+        fields = "__all__"
+        extra_kwargs = {
+            "rm_map": {
+                "required": False
+            }
+        }
+
+    def validate(self, attrs):
+        rm_map_id = self.context["view"].kwargs.get("rm_map")
+
+        if not rm_map_id:
+            raise serializers.ValidationError(
+                {"rm_map": "Room Mapping Id is required."}
+            )
+
+        try:
+            allotment = RoomAllotment.objects.get(
+                id=rm_map_id,
+                is_active=True
+            )
+        except RoomAllotment.DoesNotExist:
+            raise serializers.ValidationError(
+                {"rm_map": "Active Room Allotment not found."}
+            )
+
+        qs = RoomAllotmentExtra.objects.filter(rm_map=allotment)
+
+        if self.instance:
+            qs = qs.exclude(id=self.instance.id)
+
+        if qs.exists():
+            raise serializers.ValidationError(
+                {"rm_map": "Extra details already exist for this room allotment."}
+            )
+
+        attrs["rm_map"] = allotment
+        return attrs
 
 
 class TransactionsSerializer(serializers.ModelSerializer):
