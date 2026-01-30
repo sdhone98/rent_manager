@@ -6,7 +6,6 @@ from resources.constant import ElectricityConsumer
 from resources.custom_enums import (
     RoleChoices,
     StateCode,
-    FloorCodes,
     BuildingCodes,
     PaymentModeChoices,
     NoticeType,
@@ -129,8 +128,8 @@ class RoomMaster(models.Model):
 
 class MeterDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
-    r_no = models.ForeignKey(RoomMaster, on_delete=models.CASCADE, related_name="meter_details", unique=True)
-    meter_no = models.PositiveIntegerField(unique=True)
+    r_no = models.OneToOneField(RoomMaster, on_delete=models.CASCADE, related_name="meter_details", unique=True)
+    meter_no = models.CharField(unique=True, max_length=12)
     bu_code = models.PositiveSmallIntegerField()
     con_type = models.CharField(max_length=12, default=ElectricityConsumer.LT)
 

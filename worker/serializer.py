@@ -10,16 +10,52 @@ from worker.models import (
     Transaction,
     Contact,
     RentalDetails,
-    RoomAllotmentExtra
+    RoomAllotmentExtra,
+    MeterDetails
 )
 
 
 class RoomMasterSerializer(serializers.ModelSerializer):
     r_code = serializers.CharField(required=False)
+    meter_details = serializers.SerializerMethodField()
+    allotment_details = serializers.SerializerMethodField()
 
     class Meta:
         model = RoomMaster
         fields = "__all__"
+
+    def get_meter_details(self, obj):
+        try:
+            meter = obj.meter_details
+        except MeterDetails.DoesNotExist:
+            return None
+
+        return {
+            "id": meter.id,
+            "r_no": meter.r_no_id,
+            "meter_no": meter.meter_no,
+            "bu_code": meter.bu_code,
+            "con_type": meter.con_type
+        }
+
+    def get_allotment_details(self, obj):
+        allotment = obj.room_allotments.filter(
+            is_active=True
+        ).first()
+
+        if allotment is None:
+            return None
+
+        return {
+            "id": allotment.id,
+            "person": allotment.person_id,
+            "room": allotment.room_id,
+            "start_date": allotment.start_date,
+            "end_date": allotment.end_date,
+            "actual_end_date": allotment.actual_end_date,
+            "is_active": allotment.is_active,
+            "ts": allotment.ts,
+        }
 
 
 class PersonSerializer(serializers.ModelSerializer):
