@@ -1,3 +1,4 @@
+import threading
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import generics
@@ -6,7 +7,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from resources.generate_transaction_pdf import generate_transaction_html
 from resources.send_transaction_email import (
     send_transaction_email,
-    send_de_allotment_email
+    send_de_allotment_email,
+    send_tnx_email_in_bg
 )
 from worker.models import (
     RoomMaster,
@@ -31,6 +33,7 @@ from worker.serializer import (
     RoomAllotmentByRoomNumberSerializer,
     RoomAllotmentExtraSerializer
 )
+from worker.tasks import send_transaction_email_task
 
 
 class RoomMasterAPIView(
@@ -294,15 +297,12 @@ class TransactionsByPersonAPIView(
     def perform_create(self, serializer):
         transaction_instance = serializer.save(rm_map_id=self.kwargs["rm_map"])
 
-        # GENERATE TRANSACTION PDF
-        file_name = generate_transaction_html(transaction_instance)
+        threading.Thread(
+            target=send_tnx_email_in_bg,
+            args=(transaction_instance.id,),
+            daemon=True
+        ).start()
 
-        # Save receipt path
-        transaction_instance.receipt = f"{file_name}"
-        transaction_instance.save(update_fields=["receipt"])
-
-        send_transaction_email(transaction_instance)
-        # send_whatsapp_receipt(transaction_instance)
 
 
 class ListAllTransactionsByPersonAPIView(

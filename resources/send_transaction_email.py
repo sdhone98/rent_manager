@@ -7,7 +7,37 @@ from django.utils.html import strip_tags
 from rent_manager import settings
 
 
+def send_tnx_email_in_bg(transaction_id):
+    from worker.models import Transaction
+    transaction = Transaction.objects.get(id=transaction_id)
+    send_transaction_email(transaction)
+
+
 def send_transaction_email(transaction):
+    context = {
+        "transaction": transaction,
+        "COMPANY_EMAIL": settings.COMPANY_EMAIL,
+        "MONTH": transaction.ts.strftime("%B %Y").upper(),
+    }
+
+    html_content = render_to_string(
+        "invoice.html",
+        context
+    )
+    text_content = strip_tags(html_content)
+
+    email = EmailMultiAlternatives(
+        subject="Payment Receipt",
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[transaction.rm_map.person.email],
+    )
+
+    email.attach_alternative(html_content, "text/html")
+    email.send()
+
+
+def test_send_transaction_email(transaction):
     email = EmailMessage(
         subject="Payment Receipt",
         body=f"""
