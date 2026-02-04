@@ -15,7 +15,8 @@ from worker.views import (
     RoomAllotmentByRoomNumberAPIView,
     TransactionsAPIView,
     RentalDetailsByRoomAllotmentAPIView,
-    RoomAllotmentExtraSerializerByRoomAllotmentAPIView
+    RoomAllotmentExtraSerializerByRoomAllotmentAPIView,
+    PersonsAPIView
 )
 
 urlpatterns = [
@@ -25,7 +26,7 @@ urlpatterns = [
 
     path("room/available/", AvailableRoomsView.as_view(), name="available-rooms"),
 
-    path("person/", PersonAPIView.as_view(), name="person-list-create"),
+    path("person/", PersonsAPIView.as_view(), name="person-list-create"),
     path("person/<int:pk>/", PersonAPIView.as_view(), name="person-detail"),
 
     path("person/<int:person_id>/contact/", ContactByPersonAPIView.as_view(), name="contact"),

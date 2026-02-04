@@ -4,11 +4,10 @@ from django.utils import timezone
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
-from resources.generate_transaction_pdf import generate_transaction_html
 from resources.send_transaction_email import (
-    send_transaction_email,
     send_de_allotment_email,
-    send_tnx_email_in_bg
+    send_tnx_email_in_bg,
+    send_de_allotment_email_in_bg
 )
 from worker.models import (
     RoomMaster,
@@ -33,7 +32,6 @@ from worker.serializer import (
     RoomAllotmentByRoomNumberSerializer,
     RoomAllotmentExtraSerializer
 )
-from worker.tasks import send_transaction_email_task
 
 
 class RoomMasterAPIView(
@@ -109,24 +107,30 @@ class AvailableRoomsView(
 
 
 class PersonAPIView(
-    generics.ListAPIView,
     generics.CreateAPIView,
     generics.RetrieveUpdateDestroyAPIView,
 ):
     serializer_class = PersonSerializer
 
     def get_queryset(self):
-        pk = self.kwargs.get("pk", False)
         queryset = Person.objects.all()
-
-        if pk:
-            queryset = queryset.filter(pk=pk)
 
         return queryset
 
     @transaction.atomic
     def perform_create(self, serializer):
         serializer.save()
+
+
+class PersonsAPIView(
+    generics.ListAPIView,
+):
+    serializer_class = PersonSerializer
+
+    def get_queryset(self):
+        queryset = Person.objects.all()
+
+        return queryset
 
 
 class ContactByPersonAPIView(
@@ -276,20 +280,27 @@ class RoomDeAllotmentByPersonAPIView(
             actual_end_date=self.request.data.get("actual_end_date", timezone.now().date())
         )
 
+        threading.Thread(
+            target=send_de_allotment_email_in_bg,
+            args=(instance.id,),
+            daemon=True
+        ).start()
+
         # SEND DE ALLOTMENT EMAIL WITH DETAILS
         send_de_allotment_email(instance)
 
 
 class TransactionsByPersonAPIView(
+    generics.ListAPIView,
     generics.CreateAPIView,
-    generics.RetrieveUpdateDestroyAPIView
+    generics.RetrieveUpdateDestroyAPIView,
 ):
     serializer_class = TransactionsSerializer
     lookup_field = "rm_map"
 
     def get_queryset(self):
         return Transaction.objects.filter(
-            rm_map__person_id=self.kwargs["person_id"],
+            # rm_map__person_id=self.kwargs["person_id"],
             rm_map_id=self.kwargs["rm_map"]
         )
 
@@ -302,7 +313,6 @@ class TransactionsByPersonAPIView(
             args=(transaction_instance.id,),
             daemon=True
         ).start()
-
 
 
 class ListAllTransactionsByPersonAPIView(

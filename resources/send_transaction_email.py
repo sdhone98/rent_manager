@@ -60,6 +60,13 @@ Comment: ₹{transaction.comment}
     email.send()
 
 
+def send_de_allotment_email_in_bg(room_allotment_id):
+    from worker.models import RoomAllotment
+    room_allotment = RoomAllotment.objects.get(id=room_allotment_id)
+    send_de_allotment_email(room_allotment)
+
+
+
 def send_de_allotment_email(room_allotment):
     person = room_allotment.person
 

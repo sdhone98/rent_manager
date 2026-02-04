@@ -19,10 +19,14 @@ class RoomMasterSerializer(serializers.ModelSerializer):
     r_code = serializers.CharField(required=False)
     meter_details = serializers.SerializerMethodField()
     allotment_details = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
 
     class Meta:
         model = RoomMaster
         fields = "__all__"
+
+    def get_status(self, obj):
+        return obj.status
 
     def get_meter_details(self, obj):
         try:
@@ -200,6 +204,10 @@ class RoomAllotmentByRoomNumberSerializer(serializers.ModelSerializer):
         model = RoomAllotment
         fields = [
             "id",
+            "is_active",
+            "start_date",
+            "end_date",
+            "actual_end_date",
             "person",
             "room"
         ]

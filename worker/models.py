@@ -125,6 +125,10 @@ class RoomMaster(models.Model):
     def room_size(self):
         return f"{self.area} sq.ft."
 
+    @property
+    def status(self):
+        return self.room_allotments.filter(is_active=True).exists()
+
 
 class MeterDetails(models.Model):
     id = models.BigAutoField(primary_key=True)
