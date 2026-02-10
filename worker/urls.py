@@ -16,11 +16,12 @@ from worker.views import (
     TransactionsAPIView,
     RentalDetailsByRoomAllotmentAPIView,
     RoomAllotmentExtraSerializerByRoomAllotmentAPIView,
-    PersonsAPIView
+    PersonsAPIView,
+    BuildingRoomStatsView,
+    RoomAllotmentByBuildingNameAPIView
 )
 
 urlpatterns = [
-    path("room/", RoomMasterAPIView.as_view(), name="room-list-create"),
     path("room/", RoomMasterAPIView.as_view(), name="room-detail"),
     path("room/<int:pk>/", RoomMasterDetailAPIView.as_view(), name="room-detail"),
 
@@ -37,6 +38,7 @@ urlpatterns = [
 
     path("person/<int:person_id>/room-allotment/", RoomAllotmentByPersonAPIView.as_view(), name="room-allotment"),
     path("room-allotment/<int:room__r_no>/", RoomAllotmentByRoomNumberAPIView.as_view(), name="room-allotment"),
+    path("room-allotment/", RoomAllotmentByBuildingNameAPIView.as_view(), name="room-allotment-by-building"),
     path("room-de-allotment/<int:pk>/", RoomDeAllotmentByPersonAPIView.as_view(), name="room-de-allotment"),
 
     path("room-allotment/<int:rm_map>/rental-details/",
@@ -53,4 +55,5 @@ urlpatterns = [
     path("person/<int:person_id>/transactions/", ListAllTransactionsByPersonAPIView.as_view(), name="transactions"),
     path("transactions/", TransactionsAPIView.as_view(), name="all-transactions"),
 
+    path("home/", BuildingRoomStatsView.as_view(), name="room-list-create"),
 ]

@@ -163,6 +163,7 @@ class RoomAllotment(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+        is_new = self.pk is None
         if self.start_date and not self.end_date:
             self.end_date = self.start_date + relativedelta(months=11, days=-1)
 
@@ -170,6 +171,9 @@ class RoomAllotment(models.Model):
             self.is_active = True
 
         super().save(*args, **kwargs)
+
+        if is_new:
+            RoomAllotmentExtra.objects.get_or_create(rm_map=self)
 
 
 class RoomAllotmentExtra(models.Model):

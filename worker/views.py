@@ -1,9 +1,13 @@
 import threading
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from resources.send_transaction_email import (
     send_de_allotment_email,
     send_tnx_email_in_bg,
@@ -261,6 +265,25 @@ class RoomAllotmentByRoomNumberAPIView(
         )
 
 
+class RoomAllotmentByBuildingNameAPIView(
+    generics.ListAPIView,
+):
+    serializer_class = RoomAllotmentByRoomNumberSerializer
+
+    def get_queryset(self):
+        building_code = self.request.query_params.get("building_code", False)
+
+        if not building_code:
+            raise ValidationError({
+                "building_code": "This query parameter is required."
+            })
+
+        return RoomAllotment.objects.filter(
+            is_active=True,
+            room__build_name=building_code,
+        )
+
+
 class RoomDeAllotmentByPersonAPIView(
     generics.UpdateAPIView,
     generics.ListAPIView,
@@ -333,4 +356,60 @@ class TransactionsAPIView(
     serializer_class = TransactionsSerializer
 
     def get_queryset(self):
-        return Transaction.objects.all()
+        transactions_type = self.request.query_params.get("transactions_type", False)
+        if transactions_type and transactions_type == "all":
+            return Transaction.objects.all()
+        else:
+            return Transaction.objects.filter(rm_map__is_active=True).all()
+
+
+class BuildingRoomStatsView(APIView):
+    """
+    Returns building-wise room statistics:
+    - total rooms
+    - occupied rooms
+    - vacant rooms
+    """
+
+    def get(self, request):
+        queryset = (
+            RoomMaster.objects
+            .values("build_name")
+            .annotate(
+                total_rooms=Count("id"),
+                occupied_rooms=Count(
+                    "room_allotments",
+                    filter=Q(room_allotments__is_active=True),
+                    distinct=True
+                )
+            )
+            .order_by("build_name")
+        )
+
+        data = []
+        for item in queryset:
+            data.append({
+                "building": item["build_name"],
+                "total_rooms": item["total_rooms"],
+                "occupied_rooms": item["occupied_rooms"],
+                "vacant_rooms": item["total_rooms"] - item["occupied_rooms"],
+            })
+
+        queryset_1 = (
+            RoomMaster.objects
+            .values("layout")
+            .annotate(
+                total_rooms=Count("id"),
+                vacant_rooms=Count(
+                    "id",
+                    filter=~Q(room_allotments__is_active=True),
+                    distinct=True
+                )
+            )
+            .order_by("layout")
+        )
+
+        return Response(
+            {"test": queryset_1, "test_1": data},
+            status=status.HTTP_200_OK
+        )

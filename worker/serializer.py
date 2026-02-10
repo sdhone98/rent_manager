@@ -63,6 +63,8 @@ class RoomMasterSerializer(serializers.ModelSerializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
+    is_active = serializers.SerializerMethodField()
+
     class Meta:
         model = Person
         fields = "__all__"
@@ -78,6 +80,9 @@ class PersonSerializer(serializers.ModelSerializer):
                 }
             }
         }
+
+    def get_is_active(self, obj):
+        return obj.room_allotments.filter(is_active=True).exists()
 
 
 class ContactSerializer(serializers.ModelSerializer):
