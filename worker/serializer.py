@@ -1,5 +1,6 @@
 import re
 
+from django.utils import timezone
 from rest_framework import serializers
 from worker.models import (
     RoomMaster,
@@ -235,6 +236,44 @@ class RoomAllotmentByRoomNumberSerializer(serializers.ModelSerializer):
             "layout": obj.room.layout,
             "area": obj.room.area
         }
+
+
+class RoomAllotmentExpirySerializer(serializers.ModelSerializer):
+    room = serializers.SerializerMethodField()
+    remaining_days = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RoomAllotment
+        fields = [
+            "id",
+            "start_date",
+            "end_date",
+            "remaining_days",
+            "room",
+        ]
+
+    def get_room(self, obj):
+        return {
+            "id": obj.room.id,
+            "r_no": obj.room.r_no,
+            "code_name": obj.room.code_name,
+            "build_name": obj.room.build_name,
+            "layout": obj.room.layout,
+            "area": obj.room.area
+        }
+
+    def get_remaining_days(self, obj):
+        today = timezone.now().date()
+        remaining = (obj.end_date - today).days
+
+        if remaining < 0:
+            return "Expired"
+        elif remaining == 0:
+            return "Expires today"
+        elif remaining == 1:
+            return "1 day left"
+        else:
+            return f"{remaining} days left"
 
 
 class RentalDetailsSerializer(serializers.ModelSerializer):

@@ -1,4 +1,6 @@
 import threading
+from datetime import timedelta
+
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -34,7 +36,8 @@ from worker.serializer import (
     ContactSerializer,
     RentalDetailsSerializer,
     RoomAllotmentByRoomNumberSerializer,
-    RoomAllotmentExtraSerializer
+    RoomAllotmentExtraSerializer,
+    RoomAllotmentExpirySerializer
 )
 
 
@@ -128,6 +131,7 @@ class PersonAPIView(
 
 class PersonsAPIView(
     generics.ListAPIView,
+    generics.CreateAPIView,
 ):
     serializer_class = PersonSerializer
 
@@ -282,6 +286,22 @@ class RoomAllotmentByBuildingNameAPIView(
             is_active=True,
             room__build_name=building_code,
         )
+
+
+class RoomAllotmentExpiryAPIView(
+    generics.ListAPIView,
+):
+    serializer_class = RoomAllotmentExpirySerializer
+
+    def get_queryset(self):
+        today = timezone.now().date()
+        next_30_days = today + timedelta(days=30)
+
+        return RoomAllotment.objects.filter(
+            is_active=True,
+            end_date__gte=today,
+            end_date__lte=next_30_days
+        ).select_related("person", "room")
 
 
 class RoomDeAllotmentByPersonAPIView(
