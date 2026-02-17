@@ -99,12 +99,12 @@ class RoomMaster(models.Model):
         # ADDRESS TEMPLATES PER BUILDING
         address_templates = {
             BuildingCodes.VAMAN_NIVAS: (
-                "Vaman Nivas Room No {room}, {floor}, "
+                "Vaman Nivas Room No {room}, Floor No {floor}, "
                 "Near Shree Pad Darshan front of Holy Cross English School, "
                 "Nandivali Kalyan E. Maharashtra 421306."
             ),
             BuildingCodes.ABHISHEK_APT: (
-                "Abhishek Apartment Room No {room}, {floor}, "
+                "Abhishek Apartment Room No {room}, Floor No {floor}, "
                 "Near Vedang Lake City behind, Nandivali Talav, "
                 "Nandivali Kalyan E. Maharashtra 421306."
             ),
