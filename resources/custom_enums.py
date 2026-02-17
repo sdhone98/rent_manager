@@ -7,11 +7,11 @@ class BuildingCodes(models.TextChoices):
 
 
 class FloorCodes:
-    GROUND = 1
-    FIRST = 2
-    SECOND = 3
-    THIRD = 4
-    FOURTH = 5
+    GROUND = 0
+    FIRST = 1
+    SECOND = 2
+    THIRD = 3
+    FOURTH = 4
 
     CHOICES = (
         (GROUND, GROUND),
