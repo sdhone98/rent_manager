@@ -114,7 +114,7 @@ class RoomMaster(models.Model):
         if not self.add and self.build_name in address_templates:
             self.add = address_templates[self.build_name].format(
                 room=self.r_no,
-                floor=str(self.flr_no).capitalize(),
+                floor=str(self.flr_no),
             )
 
         super().save(*args, **kwargs)
