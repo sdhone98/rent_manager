@@ -433,3 +433,60 @@ class BuildingRoomStatsView(APIView):
             {"test": queryset_1, "test_1": data},
             status=status.HTTP_200_OK
         )
+
+
+class HomeMetaInfoAPIView(APIView):
+    def get(self, request):
+        base_stats = RoomMaster.objects.aggregate(
+            total_buildings=Count("build_name", distinct=True),
+            total_rooms=Count("id"),
+            total_occupied_rooms=Count(
+                "id",
+                filter=Q(room_allotments__is_active=True),
+                distinct=True
+            ),
+            total_free_rooms=Count(
+                "id",
+                filter=~Q(room_allotments__is_active=True),
+                distinct=True
+            ),
+        )
+
+        layout_stats = (
+            RoomMaster.objects
+            .values("layout")
+            .annotate(
+                total_rooms=Count("id", distinct=True),
+                occupied_rooms=Count(
+                    "id",
+                    filter=Q(room_allotments__is_active=True),
+                    distinct=True
+                ),
+            )
+        )
+
+        layout_data = []
+
+        for item in layout_stats:
+            if item["layout"]:
+                total = item["total_rooms"]
+                occupied = item["occupied_rooms"]
+                available = total - occupied
+
+                layout_data.extend([
+                    {"key": f"{item['layout']} ROOMS", "value": total},
+                    {"key": f"Occupied {item['layout']} Rooms", "value": occupied},
+                    {"key": f"Available {item['layout']} Rooms", "value": available},
+                ])
+        data = [
+            {"key": "Buildings", "value": base_stats["total_buildings"]},
+            {"key": "rooms", "value": base_stats["total_rooms"]},
+            {"key": "Occupied Rooms", "value": base_stats["total_occupied_rooms"]},
+            {"key": "Free Rooms", "value": base_stats["total_free_rooms"]},
+            *layout_data
+        ]
+
+        return Response(
+            data=data,
+            status=status.HTTP_200_OK
+        )

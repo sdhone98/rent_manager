@@ -19,7 +19,8 @@ from worker.views import (
     PersonsAPIView,
     BuildingRoomStatsView,
     RoomAllotmentByBuildingNameAPIView,
-    RoomAllotmentExpiryAPIView
+    RoomAllotmentExpiryAPIView,
+    HomeMetaInfoAPIView
 )
 
 urlpatterns = [
@@ -58,4 +59,5 @@ urlpatterns = [
     path("transactions/", TransactionsAPIView.as_view(), name="all-transactions"),
 
     path("home/", BuildingRoomStatsView.as_view(), name="room-list-create"),
+    path("home/meta-info/", HomeMetaInfoAPIView.as_view(), name="home-meta-info"),
 ]
