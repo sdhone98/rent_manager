@@ -525,24 +525,14 @@ class UnPaidRentAPIView(APIView):
             "person",
             "room",
             "rental_details"
+        ).prefetch_related(
+            "person__contacts"
         )
         data = [
             {
-                "person": {
-                    "id": q.person.id,
-                    "f_name": q.person.f_name,
-                    "m_name": q.person.m_name,
-                    "l_name": q.person.l_name,
-                    "email": q.person.email,
-                },
-                "room": {
-                    "id": q.room.id,
-                    "r_no": q.room.r_no,
-                    "code_name": q.room.code_name,
-                    "build_name": q.room.build_name,
-                    "layout": q.room.layout,
-                    "area": q.room.area
-                },
+                "person": PersonSerializer(q.person).data,
+                "contact": ContactSerializer(q.person.contacts.first()).data if q.person.contacts.exists() else None,
+                "room": RoomMasterSerializer(q.room).data,
                 "start_date": q.start_date,
                 "rent": q.rental_details.first().rent
             }
