@@ -92,7 +92,7 @@ class RoomMaster(models.Model):
         managed = True
 
     def save(self, *args, **kwargs):
-        # Always generate room code
+        # ALWAYS GENERATE ROOM CODE
         self.r_code = f"{self.r_no}_{self.build_name}"
         self.code_name = f"{self.r_no}-{self.build_name}"
 

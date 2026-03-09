@@ -20,7 +20,11 @@ from worker.views import (
     BuildingRoomStatsView,
     RoomAllotmentByBuildingNameAPIView,
     RoomAllotmentExpiryAPIView,
-    HomeMetaInfoAPIView
+    HomeMetaInfoAPIView,
+    UnPaidRentAPIView,
+    building_details,
+    states_details,
+    payment_details
 )
 
 urlpatterns = [
@@ -60,4 +64,9 @@ urlpatterns = [
 
     path("home/", BuildingRoomStatsView.as_view(), name="room-list-create"),
     path("home/meta-info/", HomeMetaInfoAPIView.as_view(), name="home-meta-info"),
+    path("home/unpaid-rent/", UnPaidRentAPIView.as_view(), name="unpaid-rent"),
+    path("master-data/building/", building_details, name="building-detail"),
+    path("master-data/states/", states_details, name="states-detail"),
+    path("master-data/payment-modes/", payment_details, name="payment-details"),
+
 ]

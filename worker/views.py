@@ -1,15 +1,21 @@
 import threading
-from datetime import timedelta
+from datetime import timedelta, date
 
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count, Q, OuterRef, Exists
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from resources.custom_enums import (
+    BuildingCodes,
+    StateCode,
+    PaymentModeChoices
+)
 from resources.send_transaction_email import (
     send_de_allotment_email,
     send_tnx_email_in_bg,
@@ -490,3 +496,77 @@ class HomeMetaInfoAPIView(APIView):
             data=data,
             status=status.HTTP_200_OK
         )
+
+
+class UnPaidRentAPIView(APIView):
+    def get(self, request):
+        building_name = request.query_params.get("building_name")
+
+        year = int(request.query_params.get("year"))
+        month = int(request.query_params.get("month"))
+
+        first_day = date(year, month, 1)
+
+        rent_paid_subquery = Transaction.objects.filter(
+            rm_map_id=OuterRef('id'),
+            is_rent=True,
+            ts__year=year,
+            ts__month=month
+        )
+        queryset = RoomAllotment.objects.filter(
+            room__build_name=building_name,
+            is_active=True,
+            start_date__lt=first_day
+        ).annotate(
+            rent_paid=Exists(rent_paid_subquery)
+        ).filter(
+            rent_paid=False
+        ).select_related(
+            "person",
+            "room",
+            "rental_details"
+        )
+        data = [
+            {
+                "person": {
+                    "id": q.person.id,
+                    "f_name": q.person.f_name,
+                    "m_name": q.person.m_name,
+                    "l_name": q.person.l_name,
+                    "email": q.person.email,
+                },
+                "room": {
+                    "id": q.room.id,
+                    "r_no": q.room.r_no,
+                    "code_name": q.room.code_name,
+                    "build_name": q.room.build_name,
+                    "layout": q.room.layout,
+                    "area": q.room.area
+                },
+                "start_date": q.start_date,
+                "rent": q.rental_details.first().rent
+            }
+            for q in queryset
+        ]
+
+        return Response(data)
+
+
+@api_view(["GET"])
+def building_details(request):
+    building_name = [i for i in BuildingCodes]
+
+    return Response(building_name)
+
+
+@api_view(["GET"])
+def states_details(request):
+    states = [i for i in StateCode]
+
+    return Response(states)
+
+@api_view(["GET"])
+def payment_details(request):
+    payment_mode = [i for i in PaymentModeChoices]
+
+    return Response(payment_mode)
